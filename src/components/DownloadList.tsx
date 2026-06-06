@@ -14,6 +14,8 @@ interface Download {
   totalBytes: number;
   downloadedBytes: number;
   error?: string;
+  tempFilePath?: string;
+  retryCount: number;
   createdAt: number;
 }
 
@@ -39,7 +41,7 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1024 ** i).toFixed(1)} ${units[i]}`;
 }
 
-function DownloadCard({ d }: { d: Download }) {
+function DownloadCard({ d, onRetry }: { d: Download; onRetry: (id: string) => void }) {
   const meta = STATUS_META[d.status];
   const isIndeterminate = d.status === 'moving';
   const barWidth = isIndeterminate ? 100 : d.progress;
@@ -87,10 +89,28 @@ function DownloadCard({ d }: { d: Download }) {
         </div>
       )}
 
-      {d.error && (
-        <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/40 rounded-lg px-3 py-2">
-          {d.error}
-        </p>
+      {d.status === 'error' && (
+        <div className="flex flex-col gap-2">
+          {d.error && (
+            <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/40 rounded-lg px-3 py-2">
+              {d.error}
+            </p>
+          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onRetry(d.id)}
+              className="text-xs font-medium bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-200 transition-colors"
+            >
+              {d.tempFilePath ? 'Reintentar extracción' : 'Reintentar descarga'}
+            </button>
+            {d.tempFilePath && (
+              <span className="text-[10px] text-green-500">Archivo conservado — no re-descarga</span>
+            )}
+            {d.retryCount > 0 && (
+              <span className="text-[10px] text-zinc-600 ml-auto">Intento #{d.retryCount + 1}</span>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -101,6 +121,10 @@ export default function DownloadList({ initial }: { initial: Download[] }) {
     new Map(initial.map((d) => [d.id, d]))
   );
   const [connected, setConnected] = useState(false);
+
+  const handleRetry = async (id: string) => {
+    await fetch(`/api/retry/${id}`, { method: 'POST' });
+  };
 
   useEffect(() => {
     let es: EventSource;
@@ -148,7 +172,7 @@ export default function DownloadList({ initial }: { initial: Download[] }) {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {list.map((d) => <DownloadCard key={d.id} d={d} />)}
+          {list.map((d) => <DownloadCard key={d.id} d={d} onRetry={handleRetry} />)}
         </div>
       )}
     </div>

@@ -15,15 +15,17 @@ export interface Download {
   totalBytes: number;
   downloadedBytes: number;
   error?: string;
+  tempFilePath?: string;   // kept on extraction failure — enables retry without re-download
+  retryCount: number;
   createdAt: number;
 }
 
 const downloads = new Map<string, Download>();
 const listeners = new Set<(d: Download) => void>();
 
-export function createDownload(data: Omit<Download, 'id' | 'createdAt'>): Download {
+export function createDownload(data: Omit<Download, 'id' | 'createdAt' | 'retryCount'>): Download {
   const id = crypto.randomUUID();
-  const download: Download = { ...data, id, createdAt: Date.now() };
+  const download: Download = { ...data, id, retryCount: 0, createdAt: Date.now() };
   downloads.set(id, download);
   return download;
 }
