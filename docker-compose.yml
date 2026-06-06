@@ -5,12 +5,25 @@ services:
     ports:
       - "4321:4321"
     volumes:
-      # App persistent data (settings.json)
       - /DATA/AppData/jellybridge:/app/data
-      # External drive — same path inside container as on host
-      # so destination paths you type in the UI match exactly
       - /mnt:/mnt
     environment:
       - HOST=0.0.0.0
       - PORT=4321
     restart: unless-stopped
+
+x-casaos:
+  main: jellybridge
+  store_app_id: jellybridge
+  title:
+    en_us: JellyBridge
+  tagline:
+    en_us: MediaFire downloader — extracts archives, moves videos to your media folders
+  category: Utilities
+  scheme: http
+  index: /
+  port_map: "4321"
+  architectures:
+    - amd64
+    - arm64
+    - arm
