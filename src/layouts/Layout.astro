@@ -17,12 +17,13 @@ const nav = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} — JellyBridge</title>
+    <link rel="icon" type="image/jpeg" href="/icon.jpg" />
     <ClientRouter />
   </head>
   <body class="h-full flex flex-col">
     <header class="border-b border-zinc-800/60 px-6 py-3.5 flex items-center gap-8 bg-zinc-950/80 backdrop-blur sticky top-0 z-10">
       <a href="/" class="flex items-center gap-2 group" transition:name="logo">
-        <div class="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-xs font-black text-white group-hover:bg-blue-500 transition-colors">J</div>
+        <img src="/icon.jpg" alt="JellyBridge" class="w-6 h-6 rounded-md object-cover" />
         <span class="text-sm font-semibold tracking-tight text-white">JellyBridge</span>
       </a>
       <nav class="flex gap-1">

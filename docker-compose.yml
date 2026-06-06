@@ -15,6 +15,7 @@ services:
 x-casaos:
   main: jellybridge
   store_app_id: jellybridge
+  icon: https://raw.githubusercontent.com/carlos-burelo/jellybridge/refs/heads/main/icon.jpg
   title:
     en_us: JellyBridge
   tagline:
