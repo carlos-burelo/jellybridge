@@ -1,6 +1,7 @@
 import { createWriteStream, mkdirSync } from 'fs';
 import { join } from 'path';
 import { updateDownload } from './store';
+import { logger } from './logger';
 
 export async function downloadFile(
   downloadId: string,
@@ -11,15 +12,22 @@ export async function downloadFile(
   mkdirSync(tempDir, { recursive: true });
   const destPath = join(tempDir, filename);
 
+  logger.info('download', `Starting download: ${filename}`, directUrl);
+
   const res = await fetch(directUrl, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
     },
   });
 
-  if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+  if (!res.ok) {
+    const msg = `Download failed: HTTP ${res.status}`;
+    logger.error('download', msg, filename);
+    throw new Error(msg);
+  }
 
   const totalBytes = Number(res.headers.get('content-length') ?? 0);
+  logger.info('download', `File size: ${totalBytes > 0 ? (totalBytes / 1024 / 1024).toFixed(1) + ' MB' : 'unknown'}`, filename);
   updateDownload(downloadId, { status: 'downloading', totalBytes });
 
   const writer = createWriteStream(destPath);
@@ -40,5 +48,6 @@ export async function downloadFile(
     writer.on('error', reject);
   });
 
+  logger.info('download', `Download complete: ${filename}`, destPath);
   return destPath;
 }

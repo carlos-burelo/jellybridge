@@ -6,6 +6,7 @@ import { extractWithPasswords } from './extractor';
 import { detectContentType } from './detector';
 import { createDownload, updateDownload } from './store';
 import { loadSettings } from './settings';
+import { logger } from './logger';
 import type { Provider } from './store';
 
 export async function startDownload(
@@ -16,6 +17,8 @@ export async function startDownload(
   const settings = loadSettings();
   const destination = settings.destinations.find((d) => d.id === destinationId);
   if (!destination) throw new Error('Destination not found');
+
+  logger.info('system', `New download queued via ${provider}`, url);
 
   const download = createDownload({
     provider,
@@ -38,12 +41,15 @@ export async function startDownload(
 async function moveFile(src: string, destDir: string): Promise<void> {
   mkdirSync(destDir, { recursive: true });
   const dest = join(destDir, basename(src));
+  logger.info('move', `Moving to ${destDir}`, src);
   try {
     renameSync(src, dest);
+    logger.info('move', `Move complete (rename)`, dest);
   } catch {
-    // rename fails across filesystems — fallback to copy+delete
+    logger.debug('move', `rename failed (cross-device), fallback to copy+delete`);
     copyFileSync(src, dest);
     unlinkSync(src);
+    logger.info('move', `Move complete (copy+delete)`, dest);
   }
 }
 
@@ -57,30 +63,35 @@ async function runPipeline(
 ): Promise<void> {
   let filePath: string | null = null;
   try {
-    // Resolve direct URL based on provider
     const { directUrl, filename } =
-      provider === 'mediafire' ? await resolveMediafireUrl(url) : (() => { throw new Error(`Unknown provider: ${provider}`); })();
+      provider === 'mediafire'
+        ? await resolveMediafireUrl(url)
+        : (() => { throw new Error(`Unknown provider: ${provider}`); })();
 
     const contentType = detectContentType(filename);
+    logger.info('system', `Detected content type: ${contentType}`, filename);
     updateDownload(downloadId, { filename, contentType });
 
     filePath = await downloadFile(downloadId, directUrl, filename, tempDir);
 
     if (contentType === 'archive') {
-      updateDownload(downloadId, { status: 'extracting', progress: 100 });
-      await extractWithPasswords(filePath, destPath, passwords);
+      updateDownload(downloadId, { status: 'extracting', progress: 0 });
+      await extractWithPasswords(filePath, destPath, passwords, (pct) => {
+        updateDownload(downloadId, { progress: pct });
+      });
       unlinkSync(filePath);
       filePath = null;
     } else {
-      // video or unknown — move directly
       updateDownload(downloadId, { status: 'moving', progress: 100 });
       await moveFile(filePath, destPath);
       filePath = null;
     }
 
+    logger.info('system', `Pipeline complete for: ${filename}`, destPath);
     updateDownload(downloadId, { status: 'done', progress: 100 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
+    logger.error('system', `Pipeline failed: ${message}`, url);
     updateDownload(downloadId, { status: 'error', error: message });
   } finally {
     if (filePath) {

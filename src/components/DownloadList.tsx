@@ -41,7 +41,7 @@ function formatBytes(bytes: number): string {
 
 function DownloadCard({ d }: { d: Download }) {
   const meta = STATUS_META[d.status];
-  const isIndeterminate = d.status === 'extracting' || d.status === 'moving';
+  const isIndeterminate = d.status === 'moving';
   const barWidth = isIndeterminate ? 100 : d.progress;
   const name = d.filename || new URL(d.url).hostname;
   const badge = d.contentType ? CONTENT_BADGE[d.contentType] : null;
@@ -49,7 +49,7 @@ function DownloadCard({ d }: { d: Download }) {
   const statusNote =
     d.status === 'downloading' && d.totalBytes > 0
       ? `${formatBytes(d.downloadedBytes)} / ${formatBytes(d.totalBytes)}`
-      : d.status === 'extracting' ? 'Descomprimiendo…'
+      : d.status === 'extracting' ? `Extrayendo ${d.progress}%`
       : d.status === 'moving' ? 'Moviendo a destino…'
       : d.status === 'done' ? 'Listo'
       : '';
@@ -82,7 +82,7 @@ function DownloadCard({ d }: { d: Download }) {
           </div>
           <div className="flex justify-between text-xs text-zinc-500">
             <span>{statusNote}</span>
-            {d.status === 'downloading' && <span>{d.progress}%</span>}
+            {(d.status === 'downloading' || d.status === 'extracting') && <span>{d.progress}%</span>}
           </div>
         </div>
       )}
