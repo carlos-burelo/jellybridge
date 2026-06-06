@@ -1,5 +1,12 @@
 import { useState } from 'react';
 
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 interface Destination { id: string; name: string; path: string }
 interface Settings { passwords: string[]; destinations: Destination[]; tempDir: string }
 
@@ -33,7 +40,7 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
     if (!newDestName.trim() || !newDestPath.trim()) return;
     setSettings((s) => ({
       ...s,
-      destinations: [...s.destinations, { id: crypto.randomUUID(), name: newDestName.trim(), path: newDestPath.trim() }],
+      destinations: [...s.destinations, { id: uuid(), name: newDestName.trim(), path: newDestPath.trim() }],
     }));
     setNewDestName('');
     setNewDestPath('');
