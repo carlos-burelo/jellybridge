@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DownloadList from '../components/DownloadList';
+import { getAllDownloads } from '../lib/store';
+
+const downloads = getAllDownloads();
+---
+<Layout title="Progreso">
+  <div class="flex flex-col gap-6">
+    <div>
+      <h1 class="text-2xl font-bold">Descargas</h1>
+      <p class="text-sm text-zinc-500 mt-1">Progreso en tiempo real.</p>
+    </div>
+    <DownloadList client:only="react" initial={downloads} />
+  </div>
+</Layout>

@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import DownloadForm from '../components/DownloadForm';
+import { loadSettings } from '../lib/settings';
+
+const settings = loadSettings();
+---
+<Layout title="Descargar">
+  <div class="flex flex-col gap-6">
+    <div>
+      <h1 class="text-2xl font-bold">Nueva descarga</h1>
+      <p class="text-sm text-zinc-500 mt-1">Pega una URL de MediaFire y elige el destino.</p>
+    </div>
+    <DownloadForm client:load destinations={settings.destinations} />
+  </div>
+</Layout>
