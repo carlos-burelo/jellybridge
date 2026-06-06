@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DirectoryPicker from './DirectoryPicker';
 
 function uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -91,7 +92,7 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
       <section className="flex flex-col gap-4">
         <div>
           <h2 className="text-sm font-semibold text-zinc-200">Carpetas destino</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">Si tus medios están en unidad externa usa <code className="text-zinc-400">/mnt/tu-disco/Películas</code></p>
+          <p className="text-xs text-zinc-500 mt-0.5">Usa el explorador o escribe la ruta manualmente.</p>
         </div>
 
         {settings.destinations.length > 0 && (
@@ -121,14 +122,7 @@ export default function SettingsForm({ initial }: { initial: Settings }) {
             placeholder="Nombre (ej: Películas)"
             className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 rounded-lg px-3.5 py-2 text-sm focus:outline-none transition-colors placeholder-zinc-600"
           />
-          <input
-            type="text"
-            value={newDestPath}
-            onChange={(e) => setNewDestPath(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addDestination()}
-            placeholder="/DATA/Media/Películas"
-            className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-blue-500 rounded-lg px-3.5 py-2 text-sm font-mono focus:outline-none transition-colors placeholder-zinc-600"
-          />
+          <DirectoryPicker value={newDestPath} onChange={setNewDestPath} />
           <button onClick={addDestination} className="bg-zinc-800 hover:bg-zinc-700 text-sm px-4 py-2 rounded-lg transition-colors text-zinc-300 self-start">
             Agregar destino
           </button>
