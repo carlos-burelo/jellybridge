@@ -10,8 +10,11 @@ RUN bun run build
 # ---- runtime ----
 FROM oven/bun:1-slim
 
-# 7-Zip for zip/rar extraction with passwords
-RUN apt-get update && apt-get install -y --no-install-recommends p7zip-full && rm -rf /var/lib/apt/lists/*
+# p7zip for zip/7z, unrar for RAR (non-free — required for password support)
+RUN echo "deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware" > /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends p7zip-full unrar \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
