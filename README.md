@@ -1,21 +1,35 @@
+<center>
+<img src="icon.jpg" width="100" />
+
 # JellyBridge
 
-Downloads files from MediaFire, detects content type, and delivers them to the right folder automatically.
+Download files from file hosting sites, detect content type, and deliver them to the right folder automatically — designed for CasaOS.
 
-- Archives (zip, rar, 7z): extracted with password support
-- Video files: moved directly to destination
+**Archives** (zip, rar, 7z) are extracted with optional password list support.  
+**Video files** are moved directly to your destination folder.
+</center>
+
+## Features
+
+- MediaFire downloads
+- Automatic content detection (archive vs video)
 - Multiple destination folders (Movies, Series, etc.)
-- Real-time download progress via SSE
-- Designed for CasaOS
+- Real-time progress via SSE
+- Archive extraction with password list
+- Retry failed downloads without re-downloading (temp file preserved)
+- Persistent logs with live viewer
+- Directory browser for picking destination paths
+- CasaOS dashboard integration
 
 ## Stack
 
-Astro + React + Tailwind + Bun. Docker image: `oven/bun`.
+Astro · React · Tailwind CSS · Bun · Docker
 
 ## Installation (CasaOS)
 
+Import via docker-compose or paste the compose file in the CasaOS App Store custom install.
+
 ```bash
-mkdir -p /DATA/AppData/jellybridge
 git clone <repo> /DATA/AppData/jellybridge
 cd /DATA/AppData/jellybridge
 docker compose up -d --build
@@ -25,15 +39,17 @@ Access at `http://<casaos-ip>:4321`
 
 ## Volumes
 
-| Host | Container |
-|---|---|
-| `/DATA/AppData/jellybridge` | `/app/data` |
-| `/mnt` | `/mnt` |
+| Host path | Container path | Purpose |
+|---|---|---|
+| `/DATA/AppData/jellybridge` | `/app/data` | Settings and logs |
+| `/mnt` | `/mnt` | Media storage (adjust to your setup) |
+
+The `/mnt` mapping is an example. In Settings you can browse and select any path available inside the container.
 
 ## First-time setup
 
-1. Open Settings
-2. Add destination folders (e.g. `/mnt/disk/Movies`)
+1. Open **Settings**
+2. Add destination folders using the directory browser (e.g. `/mnt/disk/Movies`)
 3. Add extraction passwords if your archives are password-protected
 4. Save
 
@@ -41,12 +57,19 @@ Access at `http://<casaos-ip>:4321`
 
 ```bash
 bun install
-bun run dev      # localhost:4321
+bun run dev      # http://localhost:4321
 bun run build
+bun run preview
 ```
 
-## Adding a new provider
+On Windows, the directory picker works against local drives. On Linux/Docker it works against the container filesystem.
 
-1. Create `src/lib/providers/<name>.ts` exporting `resolveUrl(url): Promise<{ directUrl, filename }>`
-2. Add the provider to `PROVIDERS` in `src/components/DownloadForm.tsx`
-3. Handle it in `src/lib/pipeline.ts`
+## Adding a provider
+
+1. Create `src/lib/providers/<name>.ts` exporting `async function resolve<Name>Url(url): Promise<{ directUrl, filename }>`
+2. Add to `PROVIDERS` in `src/components/DownloadForm.tsx`
+3. Add the resolver branch in `src/lib/pipeline.ts`
+
+## License
+
+MIT

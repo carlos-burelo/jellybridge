@@ -1,6 +1,6 @@
 import { logger } from '../logger';
 
-export async function resolve(pageUrl: string): Promise<{ directUrl: string; filename: string }> {
+export async function resolveMediafireUrl(pageUrl: string): Promise<{ directUrl: string; filename: string }> {
   logger.info('mediafire', `Resolving URL`, pageUrl);
 
   const res = await fetch(pageUrl, {
